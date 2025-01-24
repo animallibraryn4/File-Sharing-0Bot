@@ -1,74 +1,73 @@
-#(©)CodeXBotz
-
 import os
 import logging
 from dotenv import load_dotenv
 from logging.handlers import RotatingFileHandler
 
+# Load environment variables from .env file
 load_dotenv()
 
-#Bot token @Botfather
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "7229433028:AAHzRaYaMvuOq-OUVSi4xPCJuyTeEenHPOg")
+# Fetch bot token and API credentials from environment variables
+TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
+APP_ID = int(os.getenv("APP_ID", "20511201"))
+API_HASH = os.getenv("API_HASH")
+CHANNEL_ID = int(os.getenv("CHANNEL_ID", "1002458885592"))
+OWNER_ID = int(os.getenv("OWNER_ID", "8189717881"))
+PORT = os.getenv("PORT", "8080")
 
-#Your API ID from my.telegram.org
-APP_ID = int(os.environ.get("APP_ID", "20511201"))
+# Validate that all necessary environment variables are loaded
+if not TG_BOT_TOKEN or not API_HASH:
+    raise Exception("TG_BOT_TOKEN and API_HASH must be set in the .env file")
 
-#Your API Hash from my.telegram.org
-API_HASH = os.environ.get("API_HASH", "fb98de0adecf8af702ef9fa900df608f")
+# Database credentials
+DB_URI = os.getenv("DATABASE_URL", "mongodb+srv://username:password@cluster0.mongodb.net/dbname")
+DB_NAME = os.getenv("DATABASE_NAME", "bot_database")
 
-#Your db channel Id
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "1002458885592"))
+# Force sub channel ID and join request settings
+FORCE_SUB_CHANNEL = int(os.getenv("FORCE_SUB_CHANNEL", "0"))
+JOIN_REQUEST_ENABLE = os.getenv("JOIN_REQUEST_ENABLED", None)
 
-#OWNER ID
-OWNER_ID = int(os.environ.get("OWNER_ID", "8189717881"))
+# Bot workers setting
+TG_BOT_WORKERS = int(os.getenv("TG_BOT_WORKERS", "4"))
 
-#Port
-PORT = os.environ.get("PORT", "8080")
+# Start message and media
+START_PIC = os.getenv("START_PIC", "https://yourimageurl.com/image.jpg")
+START_MSG = os.getenv("START_MESSAGE", "Hello {first}\n\nI can store private files in the specified Channel and other users can access them via a special link.")
 
-#Database 
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://nikhil7858978052:r538PqLoSM9f49YM@cluster0.qi5qy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-DB_NAME = os.environ.get("DATABASE_NAME", "nikhil7858978052")
-
-#force sub channel id, if you want enable force sub
-FORCE_SUB_CHANNEL = int(os.environ.get("FORCE_SUB_CHANNEL", "0"))
-JOIN_REQUEST_ENABLE = os.environ.get("JOIN_REQUEST_ENABLED", None)
-
-TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "4"))
-
-#start message
-START_PIC = os.environ.get("START_PIC","https://wallpapers.com/images/featured-full/demon-slayer-pictures-tsbyd3y88kxirm15.jpg")
-START_MSG = os.environ.get("START_MESSAGE", "Hello {first}\n\nI can store private files in Specified Channel and other users can access it from special link.")
+# Admins list (ensure valid admin IDs)
+ADMINS = []
 try:
-    ADMINS=[]
-    for x in (os.environ.get("ADMINS", "8189717881").split()):
+    for x in os.getenv("ADMINS", "8189717881").split():
         ADMINS.append(int(x))
 except ValueError:
-        raise Exception("Your Admins list does not contain valid integers.")
+    raise Exception("Your Admins list does not contain valid integers.")
 
-#Force sub message 
-FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "Hello {first}\n\n<b>You need to join in my Channel/Group to use me\n\nKindly Please join Channel</b>")
+# Force subscription message
+FORCE_MSG = os.getenv("FORCE_SUB_MESSAGE", "Hello {first}\n\n<b>You need to join my Channel/Group to use me. Kindly please join the Channel.</b>")
 
-#set your Custom Caption here, Keep None for Disable Custom Caption
-CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", None)
+# Custom caption for files
+CUSTOM_CAPTION = os.getenv("CUSTOM_CAPTION", None)
 
-#set True if you want to prevent users from forwarding files from bot
-PROTECT_CONTENT = True if os.environ.get('PROTECT_CONTENT', "False") == "True" else False
+# Protect content from being forwarded
+PROTECT_CONTENT = True if os.getenv('PROTECT_CONTENT', "False") == "True" else False
 
-# Auto delete time in seconds.
+# Auto delete time in seconds
 AUTO_DELETE_TIME = int(os.getenv("AUTO_DELETE_TIME", "0"))
-AUTO_DELETE_MSG = os.environ.get("AUTO_DELETE_MSG", "This file will be automatically deleted in {time} seconds. Please ensure you have saved any necessary content before this time.")
-AUTO_DEL_SUCCESS_MSG = os.environ.get("AUTO_DEL_SUCCESS_MSG", "Your file has been successfully deleted. Thank you for using our service. ✅")
+AUTO_DELETE_MSG = os.getenv("AUTO_DELETE_MSG", "This file will be automatically deleted in {time} seconds. Please ensure you have saved any necessary content before this time.")
+AUTO_DEL_SUCCESS_MSG = os.getenv("AUTO_DEL_SUCCESS_MSG", "Your file has been successfully deleted. Thank you for using our service. ✅")
 
-#Set true if you want Disable your Channel Posts Share button
-DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", None) == 'True'
+# Disable Channel button for posts
+DISABLE_CHANNEL_BUTTON = os.getenv("DISABLE_CHANNEL_BUTTON", None) == 'True'
 
+# Bot stats and user replies
 BOT_STATS_TEXT = "<b>BOT UPTIME</b>\n{uptime}"
-USER_REPLY_TEXT = "❌Don't send me messages directly I'm only File Share bot!"
+USER_REPLY_TEXT = "❌Don't send me messages directly, I'm only a File Sharing bot!"
 
+# Append the owner ID and any additional admin IDs
 ADMINS.append(OWNER_ID)
 ADMINS.append(1250450587)
 
-LOG_FILE_NAME = "filesharingbot.txt"
+# Logging configuration
+LOG_FILE_NAME = "filesharingbot.log"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -83,6 +82,8 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+# Set logger for pyrogram to show warnings and above
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 def LOGGER(name: str) -> logging.Logger:
